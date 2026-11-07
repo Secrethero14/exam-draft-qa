@@ -1053,25 +1053,7 @@
             });
           }
 
-          // F. Plain text powers outside LaTeX (যেমন 10^-3, ms^-1, m/s^2 ল্যাটেক্স ছাড়া লেখা)
-          const nonLatexText = target.text
-            .replace(/\$\$[\s\S]*?\$\$/g, '')
-            .replace(/\$[^$]*\$/g, '')
-            .replace(/\\\[[\s\S]*?\\\]/g, '')
-            .replace(/\\\([\s\S]*?\\\)/g, '');
-          const rawPowers = nonLatexText.match(/(?:10\^-?\d+|ms\^-?[123]|m\/s\^2|[a-zA-Z]\^[23])/g);
-          if (rawPowers && rawPowers.length > 0) {
-            hasMathIssue = true;
-            warnings.push({
-              type: "warning",
-              isMath: true,
-              isQOpt: false,
-              isExpl: false,
-              text: `${target.label}-এ পাওয়ার/স্কয়ার ল্যাটেক্স ছাড়া সাধারণ টেক্সটে লেখা (${rawPowers.slice(0, 2).join(', ')}): KaTeX ফরম্যাটে \\(10^{-3}\\) বা \\(ms^{-1}\\) লিখলে সুন্দর দেখাবে`
-            });
-          }
-
-          // G. Dot product bracket multiplication: e.g. (3)(2) or (3)(-4) without dot \cdot
+          // F. Dot product bracket multiplication: e.g. (3)(2) or (3)(-4) without dot \cdot
           const parenMultRegex = /\(-?\d+\)\s*\(-?\d+\)/g;
           const parenMatches = target.text.match(parenMultRegex);
           if (parenMatches && parenMatches.length > 0) {
