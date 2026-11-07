@@ -628,40 +628,54 @@
       <!-- Step 3: Scan Results Report -->
       <div id="scannerResultsStep" class="hidden flex-1 overflow-y-auto space-y-4 pr-1">
         
-        <!-- Summary Counters Banner (6 Cards) -->
+        <!-- Summary Counters Banner (6 Interactive Clickable Filter Cards) -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-center text-xs">
-          <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <span class="text-slate-500 block font-medium">মোট প্রশ্ন</span>
+          <div id="bcard-all" onclick="setBatchFilter('all')" title="ক্লিক করে সব ট্যাব ফিল্টার করুন" class="stat-batch-card p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-500 transition-all active:scale-95 group">
+            <span class="text-slate-500 block font-medium group-hover:text-indigo-600 dark:group-hover:text-indigo-400">মোট প্রশ্ন</span>
             <strong id="resTotalQ" class="text-xl font-bold text-slate-800 dark:text-slate-100">0</strong>
+            <span class="text-[9px] text-slate-400 block mt-0.5">সব ট্যাব</span>
           </div>
-          <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
-            <span class="text-emerald-700 dark:text-emerald-300 block font-medium">ত্রুটিমুক্ত ট্যাব</span>
+          <div id="bcard-clean" onclick="setBatchFilter('clean')" title="ক্লিক করে শুধুমাত্র ত্রুটিমুক্ত ট্যাবগুলো ফিল্টার করুন" class="stat-batch-card p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-500 transition-all active:scale-95 group">
+            <span class="text-emerald-700 dark:text-emerald-300 block font-medium group-hover:underline">ত্রুটিমুক্ত ট্যাব</span>
             <strong id="resCleanTabs" class="text-xl font-bold text-emerald-600">0</strong>
+            <span class="text-[9px] text-emerald-600/70 dark:text-emerald-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
-          <div class="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800">
-            <span class="text-purple-700 dark:text-purple-300 block font-medium">টেবিল/ডট ত্রুটি</span>
+          <div id="bcard-math" onclick="setBatchFilter('math')" title="ক্লিক করে শুধুমাত্র টেবিল/ডট ফরম্যাট ত্রুটিযুক্ত ট্যাবগুলো ফিল্টার করুন" class="stat-batch-card p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-all active:scale-95 group">
+            <span class="text-purple-700 dark:text-purple-300 block font-medium group-hover:underline">টেবিল/ডট ত্রুটি</span>
             <strong id="resMathIssues" class="text-xl font-bold text-purple-600">0</strong>
+            <span class="text-[9px] text-purple-600/70 dark:text-purple-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
-          <div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800">
-            <span class="text-rose-700 dark:text-rose-300 block font-medium">ডুপ্লিকেট প্রশ্ন</span>
+          <div id="bcard-duplicate" onclick="setBatchFilter('duplicate')" title="ক্লিক করে শুধুমাত্র ডুপ্লিকেট প্রশ্নযুক্ত ট্যাবগুলো ফিল্টার করুন" class="stat-batch-card p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 cursor-pointer hover:border-rose-400 dark:hover:border-rose-500 transition-all active:scale-95 group">
+            <span class="text-rose-700 dark:text-rose-300 block font-medium group-hover:underline">ডুপ্লিকেট প্রশ্ন</span>
             <strong id="resDuplicates" class="text-xl font-bold text-rose-600">0</strong>
+            <span class="text-[9px] text-rose-600/70 dark:text-rose-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
-          <div class="p-3 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800">
-            <span class="text-orange-700 dark:text-orange-300 block font-medium">প্রশ্ন/অপশন ত্রুটি</span>
+          <div id="bcard-q_issues" onclick="setBatchFilter('q_issues')" title="ক্লিক করে শুধুমাত্র প্রশ্ন/অপশন ত্রুটিযুক্ত ট্যাবগুলো ফিল্টার করুন" class="stat-batch-card p-3 rounded-xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 cursor-pointer hover:border-orange-400 dark:hover:border-orange-500 transition-all active:scale-95 group">
+            <span class="text-orange-700 dark:text-orange-300 block font-medium group-hover:underline">প্রশ্ন/অপশন ত্রুটি</span>
             <strong id="resQIssues" class="text-xl font-bold text-orange-600">0</strong>
+            <span class="text-[9px] text-orange-600/70 dark:text-orange-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
-          <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
-            <span class="text-amber-700 dark:text-amber-300 block font-medium">ব্যাখ্যার ত্রুটি</span>
+          <div id="bcard-expl_issues" onclick="setBatchFilter('expl_issues')" title="ক্লিক করে শুধুমাত্র ব্যাখ্যার ত্রুটিযুক্ত ট্যাবগুলো ফিল্টার করুন" class="stat-batch-card p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 transition-all active:scale-95 group">
+            <span class="text-amber-700 dark:text-amber-300 block font-medium group-hover:underline">ব্যাখ্যার ত্রুটি</span>
             <strong id="resExplIssues" class="text-xl font-bold text-amber-600">0</strong>
+            <span class="text-[9px] text-amber-600/70 dark:text-amber-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
         </div>
 
-        <!-- Filter tabs in report -->
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-slate-700 dark:text-slate-300">ট্যাব ভিত্তিক ফলাফল:</span>
+        <!-- Filter Bar & Active Indicator -->
+        <div class="flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-800">
+          <div class="flex items-center gap-2 text-xs flex-wrap">
+            <span class="font-bold text-slate-700 dark:text-slate-300">ট্যাব ভিত্তিক ফলাফল:</span>
+            <span id="batchFilterBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-sm">
+              <span id="batchFilterText">সব ট্যাব</span>
+              <button onclick="setBatchFilter('all')" title="ফিল্টার রিসেট করুন" class="hover:text-rose-500 text-[10px] ml-1"><i class="fa-solid fa-xmark"></i></button>
+            </span>
+            <span class="text-[11px] text-slate-500">(<strong id="batchShowingCount" class="text-indigo-600 dark:text-indigo-400">0</strong> টি ট্যাব প্রদর্শিত)</span>
+          </div>
+
           <div class="flex items-center gap-1 text-[11px]">
-            <button onclick="filterBatchResults('all')" id="bfilter-all" class="px-2 py-0.5 rounded bg-indigo-600 text-white font-bold">সব ট্যাব</button>
-            <button onclick="filterBatchResults('issues')" id="bfilter-issues" class="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold">শুধু ত্রুটিযুক্ত ট্যাব</button>
+            <button onclick="setBatchFilter('all')" id="bfilter-all" class="px-2.5 py-1 rounded bg-indigo-600 text-white font-bold transition shadow-sm">সব ট্যাব</button>
+            <button onclick="setBatchFilter('issues')" id="bfilter-issues" class="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition">শুধু ত্রুটিযুক্ত ট্যাব</button>
           </div>
         </div>
 
@@ -2089,6 +2103,7 @@
     }
 
     function resetScannerView() {
+      batchCurrentFilter = 'all';
       document.getElementById("scannerConfigStep").classList.remove("hidden");
       document.getElementById("scannerProgressStep").classList.add("hidden");
       document.getElementById("scannerResultsStep").classList.add("hidden");
@@ -2294,19 +2309,156 @@
       const resMath = document.getElementById("resMathIssues");
       if (resMath) resMath.textContent = totalMathIssues;
 
+      updateBatchCardsHighlight();
+      renderBatchCards();
+    }
+
+    function setBatchFilter(filter) {
+      if (batchCurrentFilter === filter && filter !== 'all') {
+        batchCurrentFilter = 'all';
+      } else {
+        batchCurrentFilter = filter;
+      }
+      updateBatchCardsHighlight();
       renderBatchCards();
     }
 
     function filterBatchResults(filter) {
-      batchCurrentFilter = filter;
-      document.getElementById("bfilter-all").className = filter === 'all' 
-        ? "px-2 py-0.5 rounded bg-indigo-600 text-white font-bold" 
-        : "px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold";
-      document.getElementById("bfilter-issues").className = filter === 'issues' 
-        ? "px-2 py-0.5 rounded bg-indigo-600 text-white font-bold" 
-        : "px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold";
+      setBatchFilter(filter);
+    }
 
-      renderBatchCards();
+    function updateBatchCardsHighlight() {
+      const cardMap = [
+        { id: 'bcard-all', key: 'all', ring: 'ring-2 ring-indigo-500 scale-[1.02] shadow-md border-indigo-500' },
+        { id: 'bcard-clean', key: 'clean', ring: 'ring-2 ring-emerald-500 scale-[1.02] shadow-md border-emerald-500' },
+        { id: 'bcard-math', key: 'math', ring: 'ring-2 ring-purple-500 scale-[1.02] shadow-md border-purple-500' },
+        { id: 'bcard-duplicate', key: 'duplicate', ring: 'ring-2 ring-rose-500 scale-[1.02] shadow-md border-rose-500' },
+        { id: 'bcard-q_issues', key: 'q_issues', ring: 'ring-2 ring-orange-500 scale-[1.02] shadow-md border-orange-500' },
+        { id: 'bcard-expl_issues', key: 'expl_issues', ring: 'ring-2 ring-amber-500 scale-[1.02] shadow-md border-amber-500' }
+      ];
+
+      const removeClasses = ['ring-2', 'ring-indigo-500', 'ring-emerald-500', 'ring-purple-500', 'ring-rose-500', 'ring-orange-500', 'ring-amber-500', 'scale-[1.02]', 'shadow-md', 'border-indigo-500', 'border-emerald-500', 'border-purple-500', 'border-rose-500', 'border-orange-500', 'border-amber-500'];
+
+      cardMap.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (!el) return;
+        removeClasses.forEach(cls => el.classList.remove(cls));
+        if (batchCurrentFilter === item.key) {
+          item.ring.split(' ').forEach(cls => el.classList.add(cls));
+        }
+      });
+
+      // Quick filter pill buttons
+      const btnAll = document.getElementById("bfilter-all");
+      const btnIssues = document.getElementById("bfilter-issues");
+      if (btnAll && btnIssues) {
+        if (batchCurrentFilter === 'all') {
+          btnAll.className = "px-2.5 py-1 rounded bg-indigo-600 text-white font-bold transition shadow-sm";
+          btnIssues.className = "px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition";
+        } else if (batchCurrentFilter === 'issues') {
+          btnAll.className = "px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition";
+          btnIssues.className = "px-2.5 py-1 rounded bg-indigo-600 text-white font-bold transition shadow-sm";
+        } else {
+          btnAll.className = "px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition";
+          btnIssues.className = "px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition";
+        }
+      }
+
+      // Filter badge label text
+      const labelMap = {
+        all: "সব ট্যাব",
+        issues: "সব ত্রুটিযুক্ত ট্যাব",
+        clean: "ত্রুটিমুক্ত ট্যাবসমূহ",
+        math: "টেবিল/ডট ফরম্যাট ত্রুটি",
+        duplicate: "ডুপ্লিকেট প্রশ্নসমূহ",
+        q_issues: "প্রশ্ন/অপশন ত্রুটিসমূহ",
+        expl_issues: "ব্যাখ্যার ত্রুটিসমূহ"
+      };
+
+      const filterTextEl = document.getElementById("batchFilterText");
+      if (filterTextEl) {
+        filterTextEl.textContent = labelMap[batchCurrentFilter] || batchCurrentFilter;
+      }
+    }
+
+    function renderIssueGroup(cfg) {
+      const { title, count, icon, badgeClass, borderClass, headerColor, items, tabName, groupId, type } = cfg;
+      if (!items || items.length === 0) return "";
+
+      const initialLimit = 5;
+      const hasMore = items.length > initialLimit;
+      const visible = items.slice(0, initialLimit);
+      const hidden = hasMore ? items.slice(initialLimit) : [];
+
+      const formatItem = (item) => {
+        let desc = "";
+        if (type === 'dup') {
+          desc = `হুবহু ডুপ্লিকেট প্রশ্ন (Row ${item.dupWith.join(', ')} এর সাথে এক)`;
+        } else {
+          desc = (item.issues || []).map(x => x.text).join('; ');
+        }
+
+        let shortDesc = desc;
+        if (shortDesc.length > 105) {
+          shortDesc = shortDesc.slice(0, 100) + '...';
+        }
+
+        return `
+          <div class="flex items-start gap-2 py-1 px-2.5 rounded-lg bg-white/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 text-[11px] shadow-sm hover:border-indigo-400 dark:hover:border-indigo-500 transition">
+            <button onclick="jumpToTabFromBatch('${tabName}', ${item.rowNumber})" title="এই রো-তে যান" class="flex items-center gap-1 px-2 py-0.5 rounded font-bold ${badgeClass} hover:opacity-80 transition flex-shrink-0 cursor-pointer">
+              <span>Row ${item.rowNumber}</span>
+              <i class="fa-solid fa-arrow-right text-[9px]"></i>
+            </button>
+            <span class="text-slate-700 dark:text-slate-200 leading-snug break-words flex-1 pt-0.5" title="${escapeHtml(desc)}">
+              ${escapeHtml(shortDesc)}
+            </span>
+          </div>
+        `;
+      };
+
+      return `
+        <div class="p-2.5 rounded-xl border ${borderClass} bg-slate-50/70 dark:bg-slate-900/50">
+          <div class="flex items-center justify-between font-bold text-xs mb-2 ${headerColor}">
+            <span class="flex items-center gap-1.5">
+              ${icon}
+              <span>${title}</span>
+            </span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
+              ${count} টি রো
+            </span>
+          </div>
+
+          <!-- Line-by-line items (একটি রো-এর পরে লাইন ব্রেক) -->
+          <div class="space-y-1">
+            ${visible.map(formatItem).join('')}
+          </div>
+
+          ${hasMore ? `
+            <div id="more-${groupId}" class="hidden space-y-1 mt-1">
+              ${hidden.map(formatItem).join('')}
+            </div>
+            <button onclick="toggleMoreRows('${groupId}')" id="btn-more-${groupId}" class="mt-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer">
+              <i class="fa-solid fa-chevron-down text-[10px]"></i>
+              <span>আরও ${hidden.length} টি রো দেখুন</span>
+            </button>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function toggleMoreRows(groupId) {
+      const container = document.getElementById(`more-${groupId}`);
+      const btn = document.getElementById(`btn-more-${groupId}`);
+      if (!container || !btn) return;
+
+      if (container.classList.contains("hidden")) {
+        container.classList.remove("hidden");
+        btn.innerHTML = `<i class="fa-solid fa-chevron-up text-[10px]"></i> <span>কমিয়ে দেখুন</span>`;
+      } else {
+        container.classList.add("hidden");
+        const count = container.children.length;
+        btn.innerHTML = `<i class="fa-solid fa-chevron-down text-[10px]"></i> <span>আরও ${count} টি রো দেখুন</span>`;
+      }
     }
 
     function renderBatchCards() {
@@ -2314,63 +2466,117 @@
       container.innerHTML = "";
 
       const toShow = batchAuditResults.filter(r => {
+        if (batchCurrentFilter === 'all') return true;
         if (batchCurrentFilter === 'issues') return r.hasProblems;
+        if (batchCurrentFilter === 'clean') return !r.hasProblems && r.totalQ > 0;
+        if (batchCurrentFilter === 'math') return r.mathIssues && r.mathIssues.length > 0;
+        if (batchCurrentFilter === 'duplicate') return r.duplicates && r.duplicates.length > 0;
+        if (batchCurrentFilter === 'q_issues') return r.qIssues && r.qIssues.length > 0;
+        if (batchCurrentFilter === 'expl_issues') return r.explIssues && r.explIssues.length > 0;
         return true;
       });
+
+      const showingCountEl = document.getElementById("batchShowingCount");
+      if (showingCountEl) showingCountEl.textContent = toShow.length;
 
       if (toShow.length === 0) {
         container.innerHTML = `
           <div class="p-8 text-center text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <i class="fa-solid fa-circle-check text-3xl text-emerald-500 mb-2"></i>
-            <p class="font-bold text-slate-700 dark:text-slate-200">সবগুলো নির্বাচিত ট্যাব সম্পূর্ণ ত্রুটিমুক্ত!</p>
+            <p class="font-bold text-slate-700 dark:text-slate-200">এই ফিল্টারে কোনো ট্যাব মেলেনি বা সবগুলো নির্বাচিত ট্যাব সম্পূর্ণ ত্রুটিমুক্ত!</p>
+            <button onclick="setBatchFilter('all')" class="mt-2.5 px-3 py-1 text-xs font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">সব ট্যাব দেখুন</button>
           </div>
         `;
         return;
       }
 
-      toShow.forEach(r => {
+      toShow.forEach((r, idx) => {
+        const safeTabId = (r.tabName || `tab_${idx}`).replace(/[^a-zA-Z0-9]/g, '_');
         const card = document.createElement("div");
-        card.className = `p-3.5 rounded-xl border text-xs ${
+        card.className = `p-4 rounded-xl border text-xs transition ${
           r.hasProblems 
-            ? 'bg-white dark:bg-slate-900 border-rose-200 dark:border-rose-900/60 shadow-sm' 
+            ? 'bg-white dark:bg-slate-900 border-rose-200/90 dark:border-rose-900/60 shadow-sm' 
             : 'bg-emerald-50/40 dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/40'
         }`;
 
-        let issuesHtml = "";
+        let issuesHtml = `<div class="mt-2.5 space-y-2.5">`;
+
+        // 1. Duplicates
         if (r.duplicates.length > 0) {
-          issuesHtml += `<div class="mt-2 text-rose-600 font-semibold">🔴 ডুপ্লিকেট প্রশ্ন (${r.duplicates.length} টি): `;
-          issuesHtml += r.duplicates.map(d => `<span class="underline cursor-pointer font-bold" onclick="jumpToTabFromBatch('${r.tabName}', ${d.rowNumber})">Row ${d.rowNumber}</span> (Row ${d.dupWith.join(', ')})`).join(', ');
-          issuesHtml += `</div>`;
-        }
-        if (r.mathIssues && r.mathIssues.length > 0) {
-          issuesHtml += `<div class="mt-1 text-purple-600 dark:text-purple-400 font-medium">📐 টেবিল/ডট গুণন ফরম্যাট (${r.mathIssues.length} টি): `;
-          issuesHtml += r.mathIssues.map(mi => `<span class="font-bold underline cursor-pointer" onclick="jumpToTabFromBatch('${r.tabName}', ${mi.rowNumber})">Row ${mi.rowNumber}</span> (${mi.issues.map(x=>x.text).slice(0, 1).join(', ')})`).slice(0, 5).join(' | ');
-          if (r.mathIssues.length > 5) issuesHtml += ` ...আরও ${r.mathIssues.length - 5} টি`;
-          issuesHtml += `</div>`;
-        }
-        if (r.qIssues.length > 0) {
-          issuesHtml += `<div class="mt-1 text-orange-600 font-medium">⚠️ প্রশ্ন/অপশন ত্রুটি (${r.qIssues.length} টি): `;
-          issuesHtml += r.qIssues.map(qi => `<span class="font-bold underline cursor-pointer" onclick="jumpToTabFromBatch('${r.tabName}', ${qi.rowNumber})">Row ${qi.rowNumber}</span> (${qi.issues.map(x=>x.text).join(', ')})`).slice(0, 5).join(' | ');
-          if (r.qIssues.length > 5) issuesHtml += ` ...আরও ${r.qIssues.length - 5} টি`;
-          issuesHtml += `</div>`;
-        }
-        if (r.explIssues.length > 0) {
-          issuesHtml += `<div class="mt-1 text-amber-600 font-medium">📝 ব্যাখ্যার সমস্যা (${r.explIssues.length} টি): `;
-          issuesHtml += r.explIssues.map(ei => `<span class="font-bold underline cursor-pointer" onclick="jumpToTabFromBatch('${r.tabName}', ${ei.rowNumber})">Row ${ei.rowNumber}</span> (${ei.issues.map(x=>x.text).join(', ')})`).slice(0, 5).join(' | ');
-          if (r.explIssues.length > 5) issuesHtml += ` ...আরও ${r.explIssues.length - 5} টি`;
-          issuesHtml += `</div>`;
+          issuesHtml += renderIssueGroup({
+            title: "ডুপ্লিকেট প্রশ্ন",
+            count: r.duplicates.length,
+            icon: `<i class="fa-solid fa-clone text-rose-500"></i>`,
+            badgeClass: "bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60",
+            borderClass: "border-rose-200 dark:border-rose-900/60",
+            headerColor: "text-rose-600 dark:text-rose-400",
+            items: r.duplicates,
+            tabName: r.tabName,
+            groupId: `dup-${safeTabId}`,
+            type: 'dup'
+          });
         }
 
+        // 2. Math & Table Formatting Issues
+        if (r.mathIssues && r.mathIssues.length > 0) {
+          issuesHtml += renderIssueGroup({
+            title: "ডিটারমিন্যান্ট টেবিল ও ডট গুণন ফরম্যাট ত্রুটি",
+            count: r.mathIssues.length,
+            icon: `<i class="fa-solid fa-table-cells text-purple-500"></i>`,
+            badgeClass: "bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-900/60",
+            borderClass: "border-purple-200 dark:border-purple-900/60",
+            headerColor: "text-purple-600 dark:text-purple-400",
+            items: r.mathIssues,
+            tabName: r.tabName,
+            groupId: `math-${safeTabId}`,
+            type: 'math'
+          });
+        }
+
+        // 3. Question & Option Issues
+        if (r.qIssues.length > 0) {
+          issuesHtml += renderIssueGroup({
+            title: "প্রশ্ন ও অপশনের ত্রুটি",
+            count: r.qIssues.length,
+            icon: `<i class="fa-solid fa-triangle-exclamation text-orange-500"></i>`,
+            badgeClass: "bg-orange-100 dark:bg-orange-950 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-900/60",
+            borderClass: "border-orange-200 dark:border-orange-900/60",
+            headerColor: "text-orange-600 dark:text-orange-400",
+            items: r.qIssues,
+            tabName: r.tabName,
+            groupId: `q-${safeTabId}`,
+            type: 'q'
+          });
+        }
+
+        // 4. Explanation Issues
+        if (r.explIssues.length > 0) {
+          issuesHtml += renderIssueGroup({
+            title: "ব্যাখ্যার সমস্যা (দাঁড়ি-কমা/শব্দ স্পেস/ব্যাখ্যা নেই)",
+            count: r.explIssues.length,
+            icon: `<i class="fa-solid fa-pen-nib text-amber-500"></i>`,
+            badgeClass: "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60",
+            borderClass: "border-amber-200 dark:border-amber-900/60",
+            headerColor: "text-amber-600 dark:text-amber-400",
+            items: r.explIssues,
+            tabName: r.tabName,
+            groupId: `expl-${safeTabId}`,
+            type: 'expl'
+          });
+        }
+
+        issuesHtml += `</div>`;
+
         card.innerHTML = `
-          <div class="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
-            <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-2 flex-wrap">
               <span class="font-bold text-sm text-slate-900 dark:text-white">📑 ${r.tabName}</span>
               <span class="text-[11px] text-slate-500 font-medium">(মোট ${r.totalQ} টি প্রশ্ন)</span>
               ${r.hasProblems 
                 ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">ত্রুটি আছে</span>' 
                 : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">ত্রুটিমুক্ত ✅</span>'}
             </div>
-            <button onclick="jumpToTabFromBatch('${r.tabName}')" class="px-2.5 py-1 text-xs font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 transition">
+            <button onclick="jumpToTabFromBatch('${r.tabName}')" class="px-2.5 py-1 text-xs font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900 transition flex-shrink-0">
               ট্যাবে যান <i class="fa-solid fa-arrow-right ml-1"></i>
             </button>
           </div>
