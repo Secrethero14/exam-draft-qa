@@ -840,49 +840,90 @@
       const expl = q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "";
       const isLang = isLanguageSubject(q, tabName || currentTab);
 
+      // 0. Check for Column Shift / Mismatch (কলাম শিফট বা মিসম্যাচ শনাক্তকরণ)
+      const subjectKeywords = [
+        "পদার্থবিজ্ঞান", "পদার্থ", "রসায়ন", "রসায়ন", "গণিত", "উচ্চতর গণিত", 
+        "জীববিজ্ঞান", "বাংলা", "ইংরেজি", "Physics", "Chemistry", "Math", "Biology", "English", "Bangla",
+        "অধ্যায়", "অধ্যায়", "বিষয়", "বিষয়", "Subject", "Chapter", "Topic"
+      ];
+      const isQTextSubject = qText.trim().length <= 35 && subjectKeywords.some(k => qText.includes(k));
+      const rawAns = (q["উত্তর"] || "").trim();
+      const isAnsFormulaOrLong = rawAns.includes('\\(') || rawAns.includes('$') || rawAns.length > 15;
+      const isRightColumnShifted = isQTextSubject && (isAnsFormulaOrLong || !['A', 'B', 'C', 'D'].includes(ans));
+
+      const subVal = (q["Subject"] || q["বিষয়"] || q["বিষয়"] || "").trim();
+      const isLeftColumnShifted = subVal && (subVal.length > 50 || subVal.includes('?') || subVal.includes('কী') || subVal.includes('কোনটি') || subVal.includes('কত'));
+
+      const isColumnShifted = isRightColumnShifted || isLeftColumnShifted;
+
+      if (isRightColumnShifted) {
+        issues.push({ 
+          type: "danger", 
+          isQOpt: true, 
+          isColShift: true, 
+          text: `🚨 কলাম মিসম্যাচ / শিফট ত্রুটি! এই রো-তে ডাটা ৩ কলাম ডানে সরে গেছে (প্রশ্নের কলামে বিষয়ের নাম "${qText.trim()}" এবং উত্তরের কলামে অপশন B বসে গেছে)` 
+        });
+      } else if (isLeftColumnShifted) {
+        issues.push({ 
+          type: "danger", 
+          isQOpt: true, 
+          isColShift: true, 
+          text: `🚨 কলাম মিসম্যাচ / শিফট ত্রুটি! বিষয়ের কলামে (Column A) পুরো প্রশ্ন চলে এসেছে। ডাটা বাঁয়ে সরে গেছে!` 
+        });
+      }
+
       // 1. Check Missing Question
-      if (!qText.trim()) {
-        issues.push({ type: "danger", isQOpt: true, text: "প্রশ্ন খালি (Question missing)" });
-      } else if (qText.trim().length < 6) {
-        warnings.push({ type: "warning", isQOpt: true, text: "প্রশ্নটি খুব সংক্ষিপ্ত বা অসম্পূর্ণ হতে পারে" });
+      if (!isColumnShifted) {
+        if (!qText.trim()) {
+          issues.push({ type: "danger", isQOpt: true, text: "প্রশ্ন খালি (Question missing)" });
+        } else if (qText.trim().length < 6) {
+          warnings.push({ type: "warning", isQOpt: true, text: "প্রশ্নটি খুব সংক্ষিপ্ত বা অসম্পূর্ণ হতে পারে" });
+        }
       }
 
       // 2. Check LaTeX delimiters (unclosed $ or brackets)
-      const dollarCount = (qText.match(/(?<!\\)\$/g) || []).length;
-      if (dollarCount % 2 !== 0) {
-        issues.push({ type: "danger", isQOpt: true, text: "ডলার সাইন ($) বন্ধ করা হয়নি (Broken LaTeX)" });
-      }
-      const openParen = (qText.match(/\\\(/g) || []).length;
-      const closeParen = (qText.match(/\\\)/g) || []).length;
-      if (openParen !== closeParen) {
-        issues.push({ type: "danger", isQOpt: true, text: "ল্যাটেক্স ব্র্যাকেট \\( এবং \\) এর সংখ্যা মেলেনি" });
+      if (!isColumnShifted) {
+        const dollarCount = (qText.match(/(?<!\\)\$/g) || []).length;
+        if (dollarCount % 2 !== 0) {
+          issues.push({ type: "danger", isQOpt: true, text: "ডলার সাইন ($) বন্ধ করা হয়নি (Broken LaTeX)" });
+        }
+        const openParen = (qText.match(/\\\(/g) || []).length;
+        const closeParen = (qText.match(/\\\)/g) || []).length;
+        if (openParen !== closeParen) {
+          issues.push({ type: "danger", isQOpt: true, text: "ল্যাটেক্স ব্র্যাকেট \\( এবং \\) এর সংখ্যা মেলেনি" });
+        }
       }
 
       // 3. Check Options Missing
-      const missingOpts = [];
-      if (!optA.trim()) missingOpts.push("A");
-      if (!optB.trim()) missingOpts.push("B");
-      if (!optC.trim()) missingOpts.push("C");
-      if (!optD.trim()) missingOpts.push("D");
-      if (missingOpts.length > 0) {
-        issues.push({ type: "danger", isQOpt: true, text: `অপশন ${missingOpts.join(', ')} খালি!` });
+      if (!isColumnShifted) {
+        const missingOpts = [];
+        if (!optA.trim()) missingOpts.push("A");
+        if (!optB.trim()) missingOpts.push("B");
+        if (!optC.trim()) missingOpts.push("C");
+        if (!optD.trim()) missingOpts.push("D");
+        if (missingOpts.length > 0) {
+          issues.push({ type: "danger", isQOpt: true, text: `অপশন ${missingOpts.join(', ')} খালি!` });
+        }
       }
 
       // 4. Check Answer Missing / Invalid
-      if (!ans) {
-        issues.push({ type: "danger", isQOpt: true, text: "সঠিক উত্তর দেওয়া নেই!" });
-      } else if (!['A', 'B', 'C', 'D'].includes(ans)) {
-        warnings.push({ type: "warning", isQOpt: true, text: `উত্তরের ফরম্যাট অস্বাভাবিক (${q["উত্তর"]})` });
+      if (!isColumnShifted) {
+        if (!ans) {
+          issues.push({ type: "danger", isQOpt: true, text: "সঠিক উত্তর দেওয়া নেই!" });
+        } else if (!['A', 'B', 'C', 'D'].includes(ans)) {
+          warnings.push({ type: "warning", isQOpt: true, text: `উত্তরের ফরম্যাট অস্বাভাবিক (${q["উত্তর"]})` });
+        }
       }
 
       // 5. Check Explanation (দাঁড়ি-কমা, এক ফ্লোতে থাকা ও শব্দ লেগে থাকা পরীক্ষণ)
-      if (!expl.trim()) {
-        if (!isLang) {
-          // বিজ্ঞান, পদার্থ, রসায়ন বা গণিত বিষয়ে ব্যাখ্যা ফাঁকা থাকলে ত্রুটি
-          issues.push({ type: "danger", isExpl: true, text: "কোনো ব্যাখ্যা দেওয়া নেই (ব্যাখ্যা মিসিং)" });
-        }
-        // বাংলা ও ইংরেজি বিষয়ে কোনো ব্যাখ্যা না থাকলে এটি ত্রুটি নয়!
-      } else {
+      if (!isColumnShifted) {
+        if (!expl.trim()) {
+          if (!isLang) {
+            // বিজ্ঞান, পদার্থ, রসায়ন বা গণিত বিষয়ে ব্যাখ্যা ফাঁকা থাকলে ত্রুটি
+            issues.push({ type: "danger", isExpl: true, text: "কোনো ব্যাখ্যা দেওয়া নেই (ব্যাখ্যা মিসিং)" });
+          }
+          // বাংলা ও ইংরেজি বিষয়ে কোনো ব্যাখ্যা না থাকলে এটি ত্রুটি নয়!
+        } else {
         // Strip out LaTeX ($...$, $$...$$, \(...\), \[...\]) and URLs/copyrights before checking punctuation
         const cleanExpl = expl
           .replace(/\$\$[\s\S]*?\$\$/g, '')
@@ -939,6 +980,7 @@
           }
         }
       }
+    }
 
       // 6. Check True Duplicate (Question + Options + Answer)
       const fullFp = getFullQuestionFingerprint(q);
@@ -966,67 +1008,69 @@
         { text: expl, label: "ব্যাখ্যা", isQOpt: false, isExpl: true }
       ];
 
-      checkTargets.forEach(target => {
-        if (!target.text) return;
+      if (!isColumnShifted) {
+        checkTargets.forEach(target => {
+          if (!target.text) return;
 
-        // A. \begin{...matrix} without \\ row breaks (or with single backslash \ instead of \\)
-        const matrixRegex = /\\begin\{([a-zA-Z]*matrix)\}([\s\S]*?)\\end\{\1\}/gi;
-        let mMatch;
-        while ((mMatch = matrixRegex.exec(target.text)) !== null) {
-          const matType = mMatch[1];
-          const content = mMatch[2];
-          if (content.includes('&')) {
-            const hasDoubleBackslash = /\\\\/.test(content);
-            const hasSingleSlashBreak = /(?<!\\)\\[ \t]+[\d\-a-zA-Z\^\\]/.test(content);
-            if (!hasDoubleBackslash || hasSingleSlashBreak) {
+          // A. \begin{...matrix} without \\ row breaks (or with single backslash \ instead of \\)
+          const matrixRegex = /\\begin\{([a-zA-Z]*matrix)\}([\s\S]*?)\\end\{\1\}/gi;
+          let mMatch;
+          while ((mMatch = matrixRegex.exec(target.text)) !== null) {
+            const matType = mMatch[1];
+            const content = mMatch[2];
+            if (content.includes('&')) {
+              const hasDoubleBackslash = /\\\\/.test(content);
+              const hasSingleSlashBreak = /(?<!\\)\\[ \t]+[\d\-a-zA-Z\^\\]/.test(content);
+              if (!hasDoubleBackslash || hasSingleSlashBreak) {
+                hasMathIssue = true;
+                issues.push({
+                  type: "danger",
+                  isMath: true,
+                  isMatrix: true,
+                  isQOpt: target.isQOpt,
+                  isExpl: target.isExpl,
+                  text: `${target.label}-এ ডিটারমিন্যান্ট/ম্যাট্রিক্স টেবিল ফরম্যাটে নেই (\\begin{${matType}}-এ রো-ব্রেক \\\\ এর বদলে একক স্ল্যাশ \\ থাকায় KaTeX-এ এক লাইনে ফ্ল্যাট আসছে)`
+                });
+              }
+            }
+          }
+
+          // B. Raw pipe determinant / flattened matrix inside | ... | without \begin{vmatrix}
+          // e.g. | \hat{i} \hat{j} \hat{k} 2 1 0 0 1 2 | or | i j k 2 1 0 0 1 2 |
+          const rawPipeRegex = /\|\s*(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])(?:\s+[\d\-]+){3,}\s*\|/i;
+          if (rawPipeRegex.test(target.text)) {
+            hasMathIssue = true;
+            issues.push({
+              type: "danger",
+              isMath: true,
+              isMatrix: true,
+              isQOpt: target.isQOpt,
+              isExpl: target.isExpl,
+              text: `${target.label}-এ ডিটারমিন্যান্ট সোজা দাগে (|) ফ্ল্যাট টেক্সট হিসেবে আছে! KaTeX-এ টেবিল আকারে দেখাতে \\begin{vmatrix} ... \\end{vmatrix} ব্যবহার করুন`
+            });
+          }
+
+          // C. Dot product bracket multiplication: e.g. (3)(2) or (3)(-4) without dot \cdot
+          const parenMultRegex = /\(-?\d+\)\s*\(-?\d+\)/g;
+          const parenMatches = target.text.match(parenMultRegex);
+          if (parenMatches && parenMatches.length > 0) {
+            const isVectorMath = /\\vec|\\cdot|ডট|ভেক্টর|অভিক্ষেপ|কোণ|\\hat|\+/i.test(target.text) || 
+                                 /vector|math/i.test(tabName || currentTab) ||
+                                 parenMatches.length >= 2;
+            if (isVectorMath) {
               hasMathIssue = true;
-              issues.push({
-                type: "danger",
+              warnings.push({
+                type: "warning",
                 isMath: true,
-                isMatrix: true,
+                isDotProduct: true,
                 isQOpt: target.isQOpt,
                 isExpl: target.isExpl,
-                text: `${target.label}-এ ডিটারমিন্যান্ট/ম্যাট্রিক্স টেবিল ফরম্যাটে নেই (\\begin{${matType}}-এ রো-ব্রেক \\\\ এর বদলে একক স্ল্যাশ \\ থাকায় KaTeX-এ এক লাইনে ফ্ল্যাট আসছে)`
+                text: `${target.label}-এ ডট গুণনে ব্র্যাকেট দিয়ে গুণ লেখা হয়েছে (${parenMatches.slice(0, 2).join(' ')}): ডট গুণনে ব্র্যাকেটের বদলে ডট (\\cdot) থাকা শ্রেয় (যেমন: 3 \\cdot (-4))`
               });
             }
           }
-        }
-
-        // B. Raw pipe determinant / flattened matrix inside | ... | without \begin{vmatrix}
-        // e.g. | \hat{i} \hat{j} \hat{k} 2 1 0 0 1 2 | or | i j k 2 1 0 0 1 2 |
-        const rawPipeRegex = /\|\s*(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])(?:\s+[\d\-]+){3,}\s*\|/i;
-        if (rawPipeRegex.test(target.text)) {
-          hasMathIssue = true;
-          issues.push({
-            type: "danger",
-            isMath: true,
-            isMatrix: true,
-            isQOpt: target.isQOpt,
-            isExpl: target.isExpl,
-            text: `${target.label}-এ ডিটারমিন্যান্ট সোজা দাগে (|) ফ্ল্যাট টেক্সট হিসেবে আছে! KaTeX-এ টেবিল আকারে দেখাতে \\begin{vmatrix} ... \\end{vmatrix} ব্যবহার করুন`
-          });
-        }
-
-        // C. Dot product bracket multiplication: e.g. (3)(2) or (3)(-4) without dot \cdot
-        const parenMultRegex = /\(-?\d+\)\s*\(-?\d+\)/g;
-        const parenMatches = target.text.match(parenMultRegex);
-        if (parenMatches && parenMatches.length > 0) {
-          const isVectorMath = /\\vec|\\cdot|ডট|ভেক্টর|অভিক্ষেপ|কোণ|\\hat|\+/i.test(target.text) || 
-                               /vector|math/i.test(tabName || currentTab) ||
-                               parenMatches.length >= 2;
-          if (isVectorMath) {
-            hasMathIssue = true;
-            warnings.push({
-              type: "warning",
-              isMath: true,
-              isDotProduct: true,
-              isQOpt: target.isQOpt,
-              isExpl: target.isExpl,
-              text: `${target.label}-এ ডট গুণনে ব্র্যাকেট দিয়ে গুণ লেখা হয়েছে (${parenMatches.slice(0, 2).join(' ')}): ডট গুণনে ব্র্যাকেটের বদলে ডট (\\cdot) থাকা শ্রেয় (যেমন: 3 \\cdot (-4))`
-            });
-          }
-        }
-      });
+        });
+      }
 
       const hasExplIssue = issues.some(i => i.isExpl) || warnings.some(w => w.isExpl);
       const hasQOptIssue = issues.some(i => i.isQOpt) || warnings.some(w => w.isQOpt);
