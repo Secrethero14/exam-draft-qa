@@ -215,7 +215,7 @@
       <!-- 5. Explanation Issues Card -->
       <div onclick="setFilter('expl_issues')" class="stat-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm hover:border-amber-500 dark:hover:border-amber-500 transition group">
         <div class="flex items-center justify-between mb-1">
-          <span class="text-xs font-semibold text-amber-600 dark:text-amber-400 font-bold">ব্যাখ্যার ত্রুটি</span>
+          <span class="text-xs font-semibold text-amber-600 dark:text-amber-400 font-bold">অসম্পূর্ণ ব্যাখ্যা</span>
           <div class="w-6 h-6 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs">
             <i class="fa-solid fa-pen-nib"></i>
           </div>
@@ -641,7 +641,7 @@
             <span class="text-[9px] text-emerald-600/70 dark:text-emerald-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
           <div id="bcard-math" onclick="setBatchFilter('math')" title="ক্লিক করে শুধুমাত্র টেবিল/ডট ফরম্যাট ত্রুটিযুক্ত ট্যাবগুলো ফিল্টার করুন" class="stat-batch-card p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-all active:scale-95 group">
-            <span class="text-purple-700 dark:text-purple-300 block font-medium group-hover:underline">টেবিল/ডট ত্রুটি</span>
+            <span class="text-purple-700 dark:text-purple-300 block font-medium group-hover:underline">টেবিল/রুট/ল্যাটেক্স ত্রুটি</span>
             <strong id="resMathIssues" class="text-xl font-bold text-purple-600">0</strong>
             <span class="text-[9px] text-purple-600/70 dark:text-purple-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
@@ -656,7 +656,7 @@
             <span class="text-[9px] text-orange-600/70 dark:text-orange-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
           <div id="bcard-expl_issues" onclick="setBatchFilter('expl_issues')" title="ক্লিক করে শুধুমাত্র ব্যাখ্যার ত্রুটিযুক্ত ট্যাবগুলো ফিল্টার করুন" class="stat-batch-card p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 transition-all active:scale-95 group">
-            <span class="text-amber-700 dark:text-amber-300 block font-medium group-hover:underline">ব্যাখ্যার ত্রুটি</span>
+            <span class="text-amber-700 dark:text-amber-300 block font-medium group-hover:underline">অসম্পূর্ণ ব্যাখ্যা</span>
             <strong id="resExplIssues" class="text-xl font-bold text-amber-600">0</strong>
             <span class="text-[9px] text-amber-600/70 dark:text-amber-400/70 block mt-0.5">ফিল্টার করুন</span>
           </div>
@@ -915,72 +915,37 @@
         }
       }
 
-      // 5. Check Explanation (দাঁড়ি-কমা, এক ফ্লোতে থাকা ও শব্দ লেগে থাকা পরীক্ষণ)
+      // 5. Check Explanation (শুধুমাত্র ব্যাখ্যা মিসিং বা অসম্পূর্ণ কি না - দাঁড়ি/কমা বাদ)
       if (!isColumnShifted) {
         if (!expl.trim()) {
           if (!isLang) {
             // বিজ্ঞান, পদার্থ, রসায়ন বা গণিত বিষয়ে ব্যাখ্যা ফাঁকা থাকলে ত্রুটি
-            issues.push({ type: "danger", isExpl: true, text: "কোনো ব্যাখ্যা দেওয়া নেই (ব্যাখ্যা মিসিং)" });
+            issues.push({ type: "danger", isExpl: true, isMath: false, text: "কোনো ব্যাখ্যা দেওয়া নেই (ব্যাখ্যা মিসিং)" });
           }
           // বাংলা ও ইংরেজি বিষয়ে কোনো ব্যাখ্যা না থাকলে এটি ত্রুটি নয়!
         } else {
-        // Strip out LaTeX ($...$, $$...$$, \(...\), \[...\]) and URLs/copyrights before checking punctuation
-        const cleanExpl = expl
-          .replace(/\$\$[\s\S]*?\$\$/g, '')
-          .replace(/\$[^$]*\$/g, '')
-          .replace(/\\\[[\s\S]*?\\\]/g, '')
-          .replace(/\\\([\s\S]*?\\\)/g, '')
-          .replace(/https?:\/\/\S+/g, '')
-          .replace(/©.*/g, '')
-          .trim();
-
-        if (cleanExpl.length > 0) {
-          const words = cleanExpl.split(/\s+/).filter(w => w.length > 0);
-          const hasPunctuation = /[।\,\;\!\?\:\n]/.test(cleanExpl);
-
-          // A. এক ফ্লোতে থাকা / কোনো দাঁড়ি-কমা না থাকা
-          if (words.length >= 15 && !hasPunctuation) {
-            issues.push({ 
-              type: "danger", 
+          // ব্যাখ্যা যদি অসম্পূর্ণ থাকে (মাঝপথে কেটে যাওয়া বা অস্বাভাবিক সংক্ষিপ্ত হওয়া)
+          const trimmedExpl = expl.trim();
+          
+          // মাঝপথে কেটে যাওয়া সমীকরণ বা বাক্য (যেমন: শেষ ক্যারেক্টার +, -, =, *, /, \times, \cdot, \frac{, \sqrt{, ^, _ )
+          const brokenEndRegex = /(?:[\+\-\=\*\/\^\_\(]|\\times|\\cdot|\\frac\{|\\sqrt\{)\s*$/;
+          if (brokenEndRegex.test(trimmedExpl)) {
+            issues.push({
+              type: "danger",
               isExpl: true,
-              text: "ব্যাখ্যায় কোনো দাঁড়ি (।) বা কমা নেই! এক ফ্লোতে একটানা লেখা হয়েছে।" 
+              isMath: false,
+              text: "ব্যাখ্যাটি মাঝপথে কেটে গেছে বা অসম্পূর্ণ রয়ে গেছে (শেষ চিহ্ন অসম্পূর্ণ)"
             });
-          }
-
-          // B. দাঁড়ি বা কমার পর স্পেস না থাকায় শব্দ জোড়া লেগে যাওয়া (যেমন: "হবে।কিন্তু", "যাবে,তাই")
-          const stickyPunctuationMatch = cleanExpl.match(/[।\,][\u0980-\u09FFA-Za-z]/g);
-          if (stickyPunctuationMatch) {
-            warnings.push({ 
-              type: "warning", 
+          } else if (!isLang && trimmedExpl.length < 5) {
+            warnings.push({
+              type: "warning",
               isExpl: true,
-              text: `দাঁড়ি (।) বা কমার পর স্পেস মিসিং (শব্দ লেগে গেছে: ${stickyPunctuationMatch.slice(0, 3).join(', ')})` 
-            });
-          }
-
-          // C. অস্বাভাবিক লম্বা শব্দ (শব্দের মাঝে স্পেস মিসিং)
-          const mergedWords = words.filter(w => {
-            const pureBengali = w.replace(/[^a-zA-Z\u0980-\u09FF]/g, '');
-            return pureBengali.length >= 32;
-          });
-          if (mergedWords.length > 0) {
-            warnings.push({ 
-              type: "warning", 
-              isExpl: true,
-              text: `শব্দের মাঝে স্পেস নেই (জোড়া লেগে গেছে: "${mergedWords[0].slice(0, 22)}...")` 
-            });
-          }
-
-          // D. বড় ব্যাখ্যা দাঁড়ি ছাড়া অসমাপ্ত শেষ হওয়া
-          if (cleanExpl.length >= 60 && !/[।\.\!\?\"\')\]\}]$/.test(cleanExpl.trim())) {
-            warnings.push({ 
-              type: "info", 
-              isExpl: true,
-              text: "ব্যাখ্যার শেষে কোনো সমাপ্তিসূচক দাঁড়ি (।) পাওয়া যায়নি।" 
+              isMath: false,
+              text: `ব্যাখ্যাটি খুবই সংক্ষিপ্ত বা অসম্পূর্ণ হতে পারে ("${trimmedExpl}")`
             });
           }
         }
       }
-    }
 
       // 6. Check True Duplicate (Question + Options + Answer)
       const fullFp = getFullQuestionFingerprint(q);
@@ -997,38 +962,38 @@
         });
       }
 
-      // 7. Check Determinant / Matrix Formatting & Dot Product (টেবিল না এসে ফ্ল্যাট টেক্সট আসা ও ব্র্যাকেট গুণন)
+      // 7. Check Determinant / Matrix Formatting, Powers, Roots & Math (টেবিল, রুট, পাওয়ার ও ল্যাটেক্স ত্রুটি)
       let hasMathIssue = false;
       const checkTargets = [
-        { text: qText, label: "প্রশ্ন", isQOpt: true, isExpl: false },
-        { text: optA, label: "অপশন A", isQOpt: true, isExpl: false },
-        { text: optB, label: "অপশন B", isQOpt: true, isExpl: false },
-        { text: optC, label: "অপশন C", isQOpt: true, isExpl: false },
-        { text: optD, label: "অপশন D", isQOpt: true, isExpl: false },
-        { text: expl, label: "ব্যাখ্যা", isQOpt: false, isExpl: true }
+        { text: qText, label: "প্রশ্ন", isQOpt: true },
+        { text: optA, label: "অপশন A", isQOpt: true },
+        { text: optB, label: "অপশন B", isQOpt: true },
+        { text: optC, label: "অপশন C", isQOpt: true },
+        { text: optD, label: "অপশন D", isQOpt: true },
+        { text: expl, label: "ব্যাখ্যা", isQOpt: false }
       ];
 
       if (!isColumnShifted) {
         checkTargets.forEach(target => {
           if (!target.text) return;
 
-          // A. \begin{...matrix} without \\ row breaks (or with single backslash \ instead of \\)
+          // A. Matrix / Table without double backslash \\ row breaks
           const matrixRegex = /\\begin\{([a-zA-Z]*matrix)\}([\s\S]*?)\\end\{\1\}/gi;
           let mMatch;
           while ((mMatch = matrixRegex.exec(target.text)) !== null) {
             const matType = mMatch[1];
-            const content = mMatch[2];
-            if (content.includes('&')) {
-              const hasDoubleBackslash = /\\\\/.test(content);
-              const hasSingleSlashBreak = /(?<!\\)\\[ \t]+[\d\-a-zA-Z\^\\]/.test(content);
+            const matContent = mMatch[2];
+            if (matContent.includes('&')) {
+              const hasDoubleBackslash = /\\\\/.test(matContent);
+              const hasSingleSlashBreak = /(?<!\\)\\[ \t]+[\d\-a-zA-Z\^\\]/.test(matContent);
               if (!hasDoubleBackslash || hasSingleSlashBreak) {
                 hasMathIssue = true;
                 issues.push({
                   type: "danger",
                   isMath: true,
                   isMatrix: true,
-                  isQOpt: target.isQOpt,
-                  isExpl: target.isExpl,
+                  isQOpt: false,
+                  isExpl: false,
                   text: `${target.label}-এ ডিটারমিন্যান্ট/ম্যাট্রিক্স টেবিল ফরম্যাটে নেই (\\begin{${matType}}-এ রো-ব্রেক \\\\ এর বদলে একক স্ল্যাশ \\ থাকায় KaTeX-এ এক লাইনে ফ্ল্যাট আসছে)`
                 });
               }
@@ -1036,7 +1001,6 @@
           }
 
           // B. Raw pipe determinant / flattened matrix inside | ... | without \begin{vmatrix}
-          // e.g. | \hat{i} \hat{j} \hat{k} 2 1 0 0 1 2 | or | i j k 2 1 0 0 1 2 |
           const rawPipeRegex = /\|\s*(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])(?:\s+[\d\-]+){3,}\s*\|/i;
           if (rawPipeRegex.test(target.text)) {
             hasMathIssue = true;
@@ -1044,13 +1008,70 @@
               type: "danger",
               isMath: true,
               isMatrix: true,
-              isQOpt: target.isQOpt,
-              isExpl: target.isExpl,
+              isQOpt: false,
+              isExpl: false,
               text: `${target.label}-এ ডিটারমিন্যান্ট সোজা দাগে (|) ফ্ল্যাট টেক্সট হিসেবে আছে! KaTeX-এ টেবিল আকারে দেখাতে \\begin{vmatrix} ... \\end{vmatrix} ব্যবহার করুন`
             });
           }
 
-          // C. Dot product bracket multiplication: e.g. (3)(2) or (3)(-4) without dot \cdot
+          // C. Broken Root (\sqrt unclosed or empty)
+          const sqrtBroken = /\\sqrt\s*(?:\{[^}]*$|\s*[\$\)]|\s*$)/.test(target.text);
+          if (sqrtBroken) {
+            hasMathIssue = true;
+            issues.push({
+              type: "danger",
+              isMath: true,
+              isQOpt: false,
+              isExpl: false,
+              text: `${target.label}-এ রুটের সমীকরণ ভাঙা বা অসম্পূর্ণ (\\sqrt-এর ব্র্যাকেট বন্ধ হয়নি বা খালি)`
+            });
+          }
+
+          // D. Broken Power / Superscript (^ unclosed or dangling)
+          const powerBroken = /(?:\^\{[^}]*$|\^[ \t]*[\$\)]|\^[ \t]*$)/.test(target.text);
+          if (powerBroken) {
+            hasMathIssue = true;
+            issues.push({
+              type: "danger",
+              isMath: true,
+              isQOpt: false,
+              isExpl: false,
+              text: `${target.label}-এ পাওয়ার/স্কয়ারের চিহ্ন অসম্পূর্ণ বা ব্র্যাকেট বন্ধ হয়নি (^ এর পর মান মিসিং)`
+            });
+          }
+
+          // E. Broken Fraction (\frac unclosed)
+          const fracBroken = /\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)?$/.test(target.text);
+          if (fracBroken) {
+            hasMathIssue = true;
+            issues.push({
+              type: "danger",
+              isMath: true,
+              isQOpt: false,
+              isExpl: false,
+              text: `${target.label}-এ ভগ্নাংশের সমীকরণ অসম্পূর্ণ (\\frac এর ব্র্যাকেট বন্ধ হয়নি)`
+            });
+          }
+
+          // F. Plain text powers outside LaTeX (যেমন 10^-3, ms^-1, m/s^2 ল্যাটেক্স ছাড়া লেখা)
+          const nonLatexText = target.text
+            .replace(/\$\$[\s\S]*?\$\$/g, '')
+            .replace(/\$[^$]*\$/g, '')
+            .replace(/\\\[[\s\S]*?\\\]/g, '')
+            .replace(/\\\([\s\S]*?\\\)/g, '');
+          const rawPowers = nonLatexText.match(/(?:10\^-?\d+|ms\^-?[123]|m\/s\^2|[a-zA-Z]\^[23])/g);
+          if (rawPowers && rawPowers.length > 0) {
+            hasMathIssue = true;
+            warnings.push({
+              type: "warning",
+              isMath: true,
+              isQOpt: false,
+              isExpl: false,
+              text: `${target.label}-এ পাওয়ার/স্কয়ার ল্যাটেক্স ছাড়া সাধারণ টেক্সটে লেখা (${rawPowers.slice(0, 2).join(', ')}): KaTeX ফরম্যাটে \\(10^{-3}\\) বা \\(ms^{-1}\\) লিখলে সুন্দর দেখাবে`
+            });
+          }
+
+          // G. Dot product bracket multiplication: e.g. (3)(2) or (3)(-4) without dot \cdot
           const parenMultRegex = /\(-?\d+\)\s*\(-?\d+\)/g;
           const parenMatches = target.text.match(parenMultRegex);
           if (parenMatches && parenMatches.length > 0) {
@@ -1063,8 +1084,8 @@
                 type: "warning",
                 isMath: true,
                 isDotProduct: true,
-                isQOpt: target.isQOpt,
-                isExpl: target.isExpl,
+                isQOpt: false,
+                isExpl: false,
                 text: `${target.label}-এ ডট গুণনে ব্র্যাকেট দিয়ে গুণ লেখা হয়েছে (${parenMatches.slice(0, 2).join(' ')}): ডট গুণনে ব্র্যাকেটের বদলে ডট (\\cdot) থাকা শ্রেয় (যেমন: 3 \\cdot (-4))`
               });
             }
@@ -1072,8 +1093,10 @@
         });
       }
 
-      const hasExplIssue = issues.some(i => i.isExpl) || warnings.some(w => w.isExpl);
-      const hasQOptIssue = issues.some(i => i.isQOpt) || warnings.some(w => w.isQOpt);
+      // hasExplIssue is ONLY for missing or incomplete explanation (pure explanation errors)
+      const hasExplIssue = issues.some(i => i.isExpl && !i.isMath) || warnings.some(w => w.isExpl && !w.isMath);
+      // hasQOptIssue is ONLY for question/option missing or column shift or answer format errors
+      const hasQOptIssue = issues.some(i => i.isQOpt && !i.isMath) || warnings.some(w => w.isQOpt && !w.isMath);
 
       return {
         hasIssues: issues.length > 0,
@@ -2263,14 +2286,26 @@
                   const dupRows = localDupMap.get(fp).filter(r => r !== q.rowNumber);
                   duplicates.push({ rowNumber: q.rowNumber, qText: q["প্রশ্ন (LaTeX সহ)"] || "", dupWith: dupRows });
                 }
+                if (audit.hasMathIssue) {
+                  mathIssues.push({ 
+                    rowNumber: q.rowNumber, 
+                    qText: q["প্রশ্ন (LaTeX সহ)"] || "", 
+                    issues: audit.issues.concat(audit.warnings).filter(x => x.isMath) 
+                  });
+                }
                 if (audit.hasQOptIssue) {
-                  qIssues.push({ rowNumber: q.rowNumber, qText: q["প্রশ্ন (LaTeX সহ)"] || "", issues: audit.issues.filter(x => x.isQOpt).concat(audit.warnings.filter(x => x.isQOpt)) });
+                  qIssues.push({ 
+                    rowNumber: q.rowNumber, 
+                    qText: q["প্রশ্ন (LaTeX সহ)"] || "", 
+                    issues: audit.issues.concat(audit.warnings).filter(x => x.isQOpt && !x.isMath) 
+                  });
                 }
                 if (audit.hasExplIssue) {
-                  explIssues.push({ rowNumber: q.rowNumber, qText: q["প্রশ্ন (LaTeX সহ)"] || "", issues: audit.issues.filter(x => x.isExpl).concat(audit.warnings.filter(x => x.isExpl)) });
-                }
-                if (audit.hasMathIssue) {
-                  mathIssues.push({ rowNumber: q.rowNumber, qText: q["প্রশ্ন (LaTeX সহ)"] || "", issues: audit.issues.concat(audit.warnings).filter(x => x.isMath) });
+                  explIssues.push({ 
+                    rowNumber: q.rowNumber, 
+                    qText: q["প্রশ্ন (LaTeX সহ)"] || "", 
+                    issues: audit.issues.concat(audit.warnings).filter(x => x.isExpl && !x.isMath) 
+                  });
                 }
                 if (!isDup && !audit.hasQOptIssue && !audit.hasExplIssue && !audit.hasMathIssue) {
                   cleanCount++;
@@ -2413,10 +2448,10 @@
         all: "সব ট্যাব",
         issues: "সব ত্রুটিযুক্ত ট্যাব",
         clean: "ত্রুটিমুক্ত ট্যাবসমূহ",
-        math: "টেবিল/ডট ফরম্যাট ত্রুটি",
+        math: "টেবিল/রুট/ল্যাটেক্স ফরম্যাট ত্রুটি",
         duplicate: "ডুপ্লিকেট প্রশ্নসমূহ",
         q_issues: "প্রশ্ন/অপশন ত্রুটিসমূহ",
-        expl_issues: "ব্যাখ্যার ত্রুটিসমূহ"
+        expl_issues: "অসম্পূর্ণ/মিসিং ব্যাখ্যার ত্রুটি"
       };
 
       const filterTextEl = document.getElementById("batchFilterText");
@@ -2564,7 +2599,7 @@
         // 2. Math & Table Formatting Issues
         if (r.mathIssues && r.mathIssues.length > 0) {
           issuesHtml += renderIssueGroup({
-            title: "ডিটারমিন্যান্ট টেবিল ও ডট গুণন ফরম্যাট ত্রুটি",
+            title: "টেবিল, রুট, পাওয়ার ও ল্যাটেক্স ফরম্যাট ত্রুটি",
             count: r.mathIssues.length,
             icon: `<i class="fa-solid fa-table-cells text-purple-500"></i>`,
             badgeClass: "bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-900/60",
@@ -2596,7 +2631,7 @@
         // 4. Explanation Issues
         if (r.explIssues.length > 0) {
           issuesHtml += renderIssueGroup({
-            title: "ব্যাখ্যার সমস্যা (দাঁড়ি-কমা/শব্দ স্পেস/ব্যাখ্যা নেই)",
+            title: "ব্যাখ্যার সমস্যা (অসম্পূর্ণ বা মিসিং ব্যাখ্যা)",
             count: r.explIssues.length,
             icon: `<i class="fa-solid fa-pen-nib text-amber-500"></i>`,
             badgeClass: "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60",
