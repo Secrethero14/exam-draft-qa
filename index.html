@@ -271,9 +271,10 @@
             </button>
           </div>
 
-          <!-- Quick Filters Pills (5 options) -->
+          <!-- Quick Filters Pills (6 options) -->
           <div class="flex items-center gap-1 overflow-x-auto py-1">
             <button id="pill-all" onclick="setFilter('all')" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition">সব</button>
+            <button id="pill-math_issues" onclick="setFilter('math_issues')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-purple-100 dark:hover:bg-purple-950/60 hover:text-purple-700 dark:hover:text-purple-400 transition" title="ডিটারমিন্যান্ট টেবিল ও ডট গুণন ফরম্যাট সমস্যা">📐 টেবিল/ডট ত্রুটি</button>
             <button id="pill-q_issues" onclick="setFilter('q_issues')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-orange-100 dark:hover:bg-orange-950/60 hover:text-orange-700 dark:hover:text-orange-400 transition">⚠️ প্রশ্ন ত্রুটি</button>
             <button id="pill-expl_issues" onclick="setFilter('expl_issues')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 hover:text-amber-700 dark:hover:text-amber-400 transition">📝 ব্যাখ্যা ত্রুটি</button>
             <button id="pill-duplicate" onclick="setFilter('duplicate')" class="px-2.5 py-1.5 text-xs font-medium rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-100 dark:hover:bg-rose-950/60 hover:text-rose-700 dark:hover:text-rose-400 transition">👥 ডুপ্লিকেট</button>
@@ -400,9 +401,15 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              বিস্তারিত ব্যাখ্যা (LaTeX সহ):
-            </label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                বিস্তারিত ব্যাখ্যা (LaTeX সহ):
+              </label>
+              <button type="button" onclick="autoFixMathFormattingInEditor()" title="টেবিল/ডিটারমিন্যান্টের রো ব্রেক (\\) এবং ডট গুণন ফরম্যাট এক ক্লিকে ঠিক করুন" class="flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold bg-amber-100 hover:bg-amber-200 dark:bg-amber-950 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 rounded border border-amber-300 dark:border-amber-800 transition">
+                <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i>
+                <span>🪄 ম্যাট্রিক্স ও ডট ফিক্স</span>
+              </button>
+            </div>
             <textarea id="editExplInput" rows="3" oninput="updateLivePreview()" class="w-full text-xs sm:text-sm p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
           </div>
 
@@ -621,8 +628,8 @@
       <!-- Step 3: Scan Results Report -->
       <div id="scannerResultsStep" class="hidden flex-1 overflow-y-auto space-y-4 pr-1">
         
-        <!-- Summary Counters Banner -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-center text-xs">
+        <!-- Summary Counters Banner (6 Cards) -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-center text-xs">
           <div class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
             <span class="text-slate-500 block font-medium">মোট প্রশ্ন</span>
             <strong id="resTotalQ" class="text-xl font-bold text-slate-800 dark:text-slate-100">0</strong>
@@ -630,6 +637,10 @@
           <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
             <span class="text-emerald-700 dark:text-emerald-300 block font-medium">ত্রুটিমুক্ত ট্যাব</span>
             <strong id="resCleanTabs" class="text-xl font-bold text-emerald-600">0</strong>
+          </div>
+          <div class="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800">
+            <span class="text-purple-700 dark:text-purple-300 block font-medium">টেবিল/ডট ত্রুটি</span>
+            <strong id="resMathIssues" class="text-xl font-bold text-purple-600">0</strong>
           </div>
           <div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800">
             <span class="text-rose-700 dark:text-rose-300 block font-medium">ডুপ্লিকেট প্রশ্ন</span>
@@ -639,7 +650,7 @@
             <span class="text-orange-700 dark:text-orange-300 block font-medium">প্রশ্ন/অপশন ত্রুটি</span>
             <strong id="resQIssues" class="text-xl font-bold text-orange-600">0</strong>
           </div>
-          <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 col-span-2 sm:col-span-1">
+          <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
             <span class="text-amber-700 dark:text-amber-300 block font-medium">ব্যাখ্যার ত্রুটি</span>
             <strong id="resExplIssues" class="text-xl font-bold text-amber-600">0</strong>
           </div>
@@ -930,6 +941,79 @@
         });
       }
 
+      // 7. Check Determinant / Matrix Formatting & Dot Product (টেবিল না এসে ফ্ল্যাট টেক্সট আসা ও ব্র্যাকেট গুণন)
+      let hasMathIssue = false;
+      const checkTargets = [
+        { text: qText, label: "প্রশ্ন", isQOpt: true, isExpl: false },
+        { text: optA, label: "অপশন A", isQOpt: true, isExpl: false },
+        { text: optB, label: "অপশন B", isQOpt: true, isExpl: false },
+        { text: optC, label: "অপশন C", isQOpt: true, isExpl: false },
+        { text: optD, label: "অপশন D", isQOpt: true, isExpl: false },
+        { text: expl, label: "ব্যাখ্যা", isQOpt: false, isExpl: true }
+      ];
+
+      checkTargets.forEach(target => {
+        if (!target.text) return;
+
+        // A. \begin{...matrix} without \\ row breaks (or with single backslash \ instead of \\)
+        const matrixRegex = /\\begin\{([a-zA-Z]*matrix)\}([\s\S]*?)\\end\{\1\}/gi;
+        let mMatch;
+        while ((mMatch = matrixRegex.exec(target.text)) !== null) {
+          const matType = mMatch[1];
+          const content = mMatch[2];
+          if (content.includes('&')) {
+            const hasDoubleBackslash = /\\\\/.test(content);
+            const hasSingleSlashBreak = /(?<!\\)\\[ \t]+[\d\-a-zA-Z\^\\]/.test(content);
+            if (!hasDoubleBackslash || hasSingleSlashBreak) {
+              hasMathIssue = true;
+              issues.push({
+                type: "danger",
+                isMath: true,
+                isMatrix: true,
+                isQOpt: target.isQOpt,
+                isExpl: target.isExpl,
+                text: `${target.label}-এ ডিটারমিন্যান্ট/ম্যাট্রিক্স টেবিল ফরম্যাটে নেই (\\begin{${matType}}-এ রো-ব্রেক \\\\ এর বদলে একক স্ল্যাশ \\ থাকায় KaTeX-এ এক লাইনে ফ্ল্যাট আসছে)`
+              });
+            }
+          }
+        }
+
+        // B. Raw pipe determinant / flattened matrix inside | ... | without \begin{vmatrix}
+        // e.g. | \hat{i} \hat{j} \hat{k} 2 1 0 0 1 2 | or | i j k 2 1 0 0 1 2 |
+        const rawPipeRegex = /\|\s*(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(?:\\hat\{[ijk]\}|[ijk]\^?|[ijk])(?:\s+[\d\-]+){3,}\s*\|/i;
+        if (rawPipeRegex.test(target.text)) {
+          hasMathIssue = true;
+          issues.push({
+            type: "danger",
+            isMath: true,
+            isMatrix: true,
+            isQOpt: target.isQOpt,
+            isExpl: target.isExpl,
+            text: `${target.label}-এ ডিটারমিন্যান্ট সোজা দাগে (|) ফ্ল্যাট টেক্সট হিসেবে আছে! KaTeX-এ টেবিল আকারে দেখাতে \\begin{vmatrix} ... \\end{vmatrix} ব্যবহার করুন`
+          });
+        }
+
+        // C. Dot product bracket multiplication: e.g. (3)(2) or (3)(-4) without dot \cdot
+        const parenMultRegex = /\(-?\d+\)\s*\(-?\d+\)/g;
+        const parenMatches = target.text.match(parenMultRegex);
+        if (parenMatches && parenMatches.length > 0) {
+          const isVectorMath = /\\vec|\\cdot|ডট|ভেক্টর|অভিক্ষেপ|কোণ|\\hat|\+/i.test(target.text) || 
+                               /vector|math/i.test(tabName || currentTab) ||
+                               parenMatches.length >= 2;
+          if (isVectorMath) {
+            hasMathIssue = true;
+            warnings.push({
+              type: "warning",
+              isMath: true,
+              isDotProduct: true,
+              isQOpt: target.isQOpt,
+              isExpl: target.isExpl,
+              text: `${target.label}-এ ডট গুণনে ব্র্যাকেট দিয়ে গুণ লেখা হয়েছে (${parenMatches.slice(0, 2).join(' ')}): ডট গুণনে ব্র্যাকেটের বদলে ডট (\\cdot) থাকা শ্রেয় (যেমন: 3 \\cdot (-4))`
+            });
+          }
+        }
+      });
+
       const hasExplIssue = issues.some(i => i.isExpl) || warnings.some(w => w.isExpl);
       const hasQOptIssue = issues.some(i => i.isQOpt) || warnings.some(w => w.isQOpt);
 
@@ -938,6 +1022,7 @@
         hasWarnings: warnings.length > 0,
         hasExplIssue: hasExplIssue,
         hasQOptIssue: hasQOptIssue,
+        hasMathIssue: hasMathIssue,
         isDuplicate: isDuplicate,
         duplicateWith: duplicateWith,
         issues: issues,
@@ -1133,7 +1218,7 @@
       currentFilter = filterType;
       
       // Update pills UI
-      ['all', 'q_issues', 'expl_issues', 'duplicate', 'flagged'].forEach(f => {
+      ['all', 'math_issues', 'q_issues', 'expl_issues', 'duplicate', 'flagged'].forEach(f => {
         const pill = document.getElementById(`pill-${f}`);
         if (!pill) return;
         if (f === filterType) {
@@ -1152,6 +1237,7 @@
         banner.classList.remove("hidden");
         const names = {
           clean: 'ত্রুটিমুক্ত প্রশ্নসমূহ',
+          math_issues: 'ম্যাথ, ডিটারমিন্যান্ট টেবিল ও ডট গুণন ফরম্যাটিং ত্রুটিসমূহ',
           q_issues: 'প্রশ্ন ও অপশনের ত্রুটিসমূহ',
           expl_issues: 'ব্যাখ্যার ত্রুটিসমূহ (দাঁড়ি-কমা/শব্দ স্পেস/ব্যাখ্যা নেই)',
           duplicate: 'হুবহু ডুপ্লিকেট প্রশ্নসমূহ',
@@ -1205,6 +1291,7 @@
 
         // 1. Filter Type
         if (currentFilter === 'clean' && !audit.isClean) return false;
+        if (currentFilter === 'math_issues' && !audit.hasMathIssue) return false;
         if (currentFilter === 'q_issues' && !audit.hasQOptIssue) return false;
         if (currentFilter === 'expl_issues' && !audit.hasExplIssue) return false;
         if (currentFilter === 'duplicate' && !audit.isDuplicate) return false;
@@ -1291,6 +1378,11 @@
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
                   ✏️ খসড়ায় এডিটেড
                 </span>` : ''}
+
+              ${audit.hasMathIssue ? `
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 flex items-center gap-1">
+                  <i class="fa-solid fa-table-cells text-[10px]"></i> টেবিল/ডট ত্রুটি
+                </span>` : ''}
             </div>
 
             <!-- Action Buttons: Mark / Flag & Edit -->
@@ -1366,6 +1458,33 @@
               </div>
             `;
           });
+
+          // Matrix / Determinant syntax helper banner
+          if (audit.issues.some(x => x.isMatrix)) {
+            alertsHtml += `
+              <div class="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-950 dark:text-indigo-200">
+                <div class="flex items-center justify-between mb-1.5 font-bold">
+                  <span class="flex items-center gap-1.5"><i class="fa-solid fa-lightbulb text-indigo-500"></i> সঠিক KaTeX ডিটারমিন্যান্ট টেবিল সিনট্যাক্স:</span>
+                  <button onclick="openEditModal(${q.rowNumber})" class="text-[11px] text-indigo-600 dark:text-indigo-400 underline font-bold">এডিটরে অটো-ফিক্স করুন</button>
+                </div>
+                <p class="text-[11px] text-slate-600 dark:text-slate-400 mb-1.5">KaTeX-এ টেবিলের রো ভাঙার জন্য প্রতিটি লাইনের শেষে ডাবল স্ল্যাশ (<code class="bg-indigo-100 dark:bg-indigo-900 px-1 py-0.5 rounded font-mono font-bold">\\\\</code>) দিতে হয়। যেমন:</p>
+                <code class="block p-2 bg-white dark:bg-slate-900 rounded-lg border border-indigo-200 dark:border-indigo-800 font-mono text-[11px] text-indigo-700 dark:text-indigo-300 select-all overflow-x-auto whitespace-pre">\\begin{vmatrix} \\hat{i} & \\hat{j} & \\hat{k} \\\\ 2 & 1 & 0 \\\\ 0 & 1 & 2 \\end{vmatrix}</code>
+              </div>
+            `;
+          }
+
+          // Dot product syntax helper banner
+          if (audit.warnings.some(x => x.isDotProduct)) {
+            alertsHtml += `
+              <div class="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-circle-info text-amber-500 flex-shrink-0"></i>
+                  <span>টিপস: ব্র্যাকেট গুণন <code class="bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded font-mono">(3)(-4) + (4)(3)</code>-এর বদলে ডট গুণন <code class="bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded font-mono">3 \\cdot (-4) + 4 \\cdot 3</code> লিখলে স্ট্যান্ডার্ড দেখায়।</span>
+                </div>
+                <button onclick="openEditModal(${q.rowNumber})" class="text-[11px] text-amber-700 dark:text-amber-300 font-bold underline flex-shrink-0">ফিক্স</button>
+              </div>
+            `;
+          }
 
           alertsHtml += `</div>`;
         }
@@ -1608,6 +1727,75 @@
       renderLatex(document.getElementById("previewOptC"));
       renderLatex(document.getElementById("previewOptD"));
       renderLatex(document.getElementById("previewExpl"));
+    }
+
+    // --- Auto-fix Math & Table Formatting in Editor ---
+    function autoFixMathFormattingInEditor() {
+      const explEl = document.getElementById("editExplInput");
+      const qEl = document.getElementById("editQuestionInput");
+      let fixes = 0;
+
+      function fixText(raw) {
+        if (!raw) return raw;
+        let s = raw;
+
+        // 1. Fix matrix environments missing \\ double backslash row breaks
+        // e.g. \begin{vmatrix} \hat{i} & \hat{j} & \hat{k} \ 2 & 1 & 0 \ 0 & 1 & 2 \end{vmatrix}
+        s = s.replace(/\\begin\{([a-zA-Z]*matrix)\}([\s\S]*?)\\end\{\1\}/gi, (match, matType, content) => {
+          if (!content.includes('&')) return match;
+          let fixedContent = content.replace(/(?<!\\)\\[ \t]+(?=[\d\-a-zA-Z\^\\])/g, () => {
+            fixes++;
+            return " \\\\ ";
+          });
+          return `\\begin{${matType}}${fixedContent}\\end{${matType}}`;
+        });
+
+        // 2. Fix raw pipe determinants into \begin{vmatrix} ... \end{vmatrix}
+        // e.g. | \hat{i} \hat{j} \hat{k} 2 1 0 0 1 2 |
+        s = s.replace(/\|\s*(\\?hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(\\?hat\{[ijk]\}|[ijk]\^?|[ijk])\s+(\\?hat\{[ijk]\}|[ijk]\^?|[ijk])\s+([\d\-]+)\s+([\d\-]+)\s+([\d\-]+)\s+([\d\-]+)\s+([\d\-]+)\s+([\d\-]+)\s*\|/gi,
+          (m, i, j, k, r11, r12, r13, r21, r22, r23) => {
+            fixes++;
+            return `\\begin{vmatrix} ${i} & ${j} & ${k} \\\\ ${r11} & ${r12} & ${r13} \\\\ ${r21} & ${r22} & ${r23} \\end{vmatrix}`;
+          }
+        );
+
+        // 3. Fix bracket multiplication in dot product:
+        // (3)(2) -> 3 \cdot 2, (3)(-4) -> 3 \cdot (-4), (1)(-2) -> 1 \cdot (-2)
+        s = s.replace(/\((-?\d+)\)\s*\((-?\d+)\)/g, (match, a, b) => {
+          fixes++;
+          const numB = parseInt(b);
+          return numB < 0 ? `${a} \\cdot (${b})` : `${a} \\cdot ${b}`;
+        });
+
+        return s;
+      }
+
+      const originalExpl = explEl.value;
+      const originalQ = qEl.value;
+
+      const newExpl = fixText(originalExpl);
+      const newQ = fixText(originalQ);
+
+      if (fixes > 0) {
+        explEl.value = newExpl;
+        qEl.value = newQ;
+        updateLivePreview();
+        Swal.fire({
+          icon: 'success',
+          title: 'ফরম্যাট স্বয়ংক্রিয়ভাবে ফিক্স হয়েছে!',
+          html: `<p class="text-xs text-slate-600 dark:text-slate-300">মোট <strong>${fixes}</strong> টি স্থানে ডিটারমিন্যান্ট টেবিল ও ডট গুণন ফরম্যাট ঠিক করা হয়েছে। ডানের লাইভ KaTeX প্রিভিউ দেখুন।</p>`,
+          timer: 2500,
+          showConfirmButton: false
+        });
+      } else {
+        Swal.fire({
+          icon: 'info',
+          title: 'কোনো ফরম্যাট সমস্যা মেলেনি',
+          text: 'এখানে কোনো ফ্ল্যাট ডিটারমিন্যান্ট বা ব্র্যাকেট ডট গুণন পাওয়া যায়নি।',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
     }
 
     function saveLocalEdit() {
@@ -2004,6 +2192,7 @@
               const duplicates = [];
               const qIssues = [];
               const explIssues = [];
+              const mathIssues = [];
               let cleanCount = 0;
 
               questions.forEach(q => {
@@ -2021,7 +2210,10 @@
                 if (audit.hasExplIssue) {
                   explIssues.push({ rowNumber: q.rowNumber, qText: q["প্রশ্ন (LaTeX সহ)"] || "", issues: audit.issues.filter(x => x.isExpl).concat(audit.warnings.filter(x => x.isExpl)) });
                 }
-                if (!isDup && !audit.hasQOptIssue && !audit.hasExplIssue) {
+                if (audit.hasMathIssue) {
+                  mathIssues.push({ rowNumber: q.rowNumber, qText: q["প্রশ্ন (LaTeX সহ)"] || "", issues: audit.issues.concat(audit.warnings).filter(x => x.isMath) });
+                }
+                if (!isDup && !audit.hasQOptIssue && !audit.hasExplIssue && !audit.hasMathIssue) {
                   cleanCount++;
                 }
               });
@@ -2033,7 +2225,8 @@
                 duplicates: duplicates,
                 qIssues: qIssues,
                 explIssues: explIssues,
-                hasProblems: duplicates.length > 0 || qIssues.length > 0 || explIssues.length > 0
+                mathIssues: mathIssues,
+                hasProblems: duplicates.length > 0 || qIssues.length > 0 || explIssues.length > 0 || mathIssues.length > 0
               });
             } else {
               batchAuditResults.push({
@@ -2043,6 +2236,7 @@
                 duplicates: [],
                 qIssues: [{ rowNumber: 0, qText: 'ডাটা লোড হয়নি', issues: [{ text: data.message || 'Error' }] }],
                 explIssues: [],
+                mathIssues: [],
                 hasProblems: true
               });
             }
@@ -2054,6 +2248,7 @@
               duplicates: [],
               qIssues: [{ rowNumber: 0, qText: 'ডাটা লোড ফেইল্ড', issues: [{ text: err.message }] }],
               explIssues: [],
+              mathIssues: [],
               hasProblems: true
             });
           } finally {
@@ -2080,6 +2275,7 @@
       let totalDuplicates = 0;
       let totalQIssues = 0;
       let totalExplIssues = 0;
+      let totalMathIssues = 0;
 
       batchAuditResults.forEach(r => {
         totalQuestions += r.totalQ;
@@ -2087,6 +2283,7 @@
         totalDuplicates += r.duplicates.length;
         totalQIssues += r.qIssues.length;
         totalExplIssues += r.explIssues.length;
+        totalMathIssues += (r.mathIssues || []).length;
       });
 
       document.getElementById("resTotalQ").textContent = totalQuestions;
@@ -2094,6 +2291,8 @@
       document.getElementById("resDuplicates").textContent = totalDuplicates;
       document.getElementById("resQIssues").textContent = totalQIssues;
       document.getElementById("resExplIssues").textContent = totalExplIssues;
+      const resMath = document.getElementById("resMathIssues");
+      if (resMath) resMath.textContent = totalMathIssues;
 
       renderBatchCards();
     }
@@ -2141,6 +2340,12 @@
         if (r.duplicates.length > 0) {
           issuesHtml += `<div class="mt-2 text-rose-600 font-semibold">🔴 ডুপ্লিকেট প্রশ্ন (${r.duplicates.length} টি): `;
           issuesHtml += r.duplicates.map(d => `<span class="underline cursor-pointer font-bold" onclick="jumpToTabFromBatch('${r.tabName}', ${d.rowNumber})">Row ${d.rowNumber}</span> (Row ${d.dupWith.join(', ')})`).join(', ');
+          issuesHtml += `</div>`;
+        }
+        if (r.mathIssues && r.mathIssues.length > 0) {
+          issuesHtml += `<div class="mt-1 text-purple-600 dark:text-purple-400 font-medium">📐 টেবিল/ডট গুণন ফরম্যাট (${r.mathIssues.length} টি): `;
+          issuesHtml += r.mathIssues.map(mi => `<span class="font-bold underline cursor-pointer" onclick="jumpToTabFromBatch('${r.tabName}', ${mi.rowNumber})">Row ${mi.rowNumber}</span> (${mi.issues.map(x=>x.text).slice(0, 1).join(', ')})`).slice(0, 5).join(' | ');
+          if (r.mathIssues.length > 5) issuesHtml += ` ...আরও ${r.mathIssues.length - 5} টি`;
           issuesHtml += `</div>`;
         }
         if (r.qIssues.length > 0) {
@@ -2199,6 +2404,12 @@
             text += `🔴 DUPLICATES (${r.duplicates.length}):\n`;
             r.duplicates.forEach(d => {
               text += `  - Row ${d.rowNumber}: Duplicate of Row(s) ${d.dupWith.join(', ')}\n`;
+            });
+          }
+          if (r.mathIssues && r.mathIssues.length > 0) {
+            text += `📐 MATRIX / MATH FORMATTING ISSUES (${r.mathIssues.length}):\n`;
+            r.mathIssues.forEach(mi => {
+              text += `  - Row ${mi.rowNumber}: ${mi.issues.map(x=>x.text).join('; ')}\n`;
             });
           }
           if (r.qIssues.length > 0) {
