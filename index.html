@@ -761,6 +761,14 @@
       return map[raw] || raw;
     }
 
+    // --- Sanitize Nested LaTeX Delimiters (e.g. \( inside $) ---
+    function sanitizeNestedLatex(text) {
+      if (!text) return "";
+      return String(text)
+        .replace(/\$\$([\s\S]*?)\$\$/g, (m, inner) => '$$' + inner.replace(/\\\(|\\\)/g, '') + '$$')
+        .replace(/\$([^\$]+)\$/g, (m, inner) => '$' + inner.replace(/\\\(|\\\)/g, '') + '$');
+    }
+
     // --- KaTeX Safe Render Helper ---
     function renderLatex(element) {
       if (!element || typeof renderMathInElement !== 'function') return;
@@ -1050,6 +1058,18 @@
               isQOpt: false,
               isExpl: false,
               text: `${target.label}-এ ভগ্নাংশের সমীকরণ অসম্পূর্ণ (\\frac এর ব্র্যাকেট বন্ধ হয়নি)`
+            });
+          }
+
+          // E2. Nested \( or \) inside $...$ (কখনো $ এর ভেতর \( থাকতে পারে না)
+          if (/\$[^$]*\\\(|\$[^$]*\\\)/.test(target.text)) {
+            hasMathIssue = true;
+            issues.push({
+              type: "danger",
+              isMath: true,
+              isQOpt: false,
+              isExpl: false,
+              text: `${target.label}-এ ডলার চিহ্নের ($...$) ভেতরে অতিরিক্ত \\( বা \\) ব্র্যাকেট ঢুকে ল্যাটেক্স ক্র্যাশ করছে! ডলারের ভেতরের \\( ও \\) মুছে ফেলুন`
             });
           }
 
@@ -1571,14 +1591,14 @@
         }
 
         // Question Text Body
-        const qText = q["প্রশ্ন (LaTeX সহ)"] || "<span class='text-rose-500 italic'>[প্রশ্ন খালি]</span>";
+        const qText = sanitizeNestedLatex(q["প্রশ্ন (LaTeX সহ)"] || "<span class='text-rose-500 italic'>[প্রশ্ন খালি]</span>");
 
         // Options Grid (4 Options)
         const opts = [
-          { key: 'A', text: q["অপশন A"] || "" },
-          { key: 'B', text: q["অপশন B"] || "" },
-          { key: 'C', text: q["অপশন C"] || "" },
-          { key: 'D', text: q["অপশন D"] || "" }
+          { key: 'A', text: sanitizeNestedLatex(q["অপশন A"] || "") },
+          { key: 'B', text: sanitizeNestedLatex(q["অপশন B"] || "") },
+          { key: 'C', text: sanitizeNestedLatex(q["অপশন C"] || "") },
+          { key: 'D', text: sanitizeNestedLatex(q["অপশন D"] || "") }
         ];
 
         let optionsHtml = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 my-4">`;
@@ -1610,7 +1630,7 @@
         optionsHtml += `</div>`;
 
         // Explanation Section - ALWAYS OPEN by default!
-        const explText = q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "";
+        const explText = sanitizeNestedLatex(q["বিস্তারিত ব্যাখ্যা (LaTeX সহ)"] || "");
         let explanationHtml = '';
         if (explText.trim()) {
           const explIssues = [
