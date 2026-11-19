@@ -162,7 +162,8 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
     
     <!-- Stats & QA Audit Banner (6 Cards) -->
-    <div id="statsSection" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3.5 mb-6">
+    <!-- Stats Row (Modern Cards) -->
+    <div id="statsSection" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-3.5 mb-6">
       
       <!-- 1. Total Questions Card -->
       <div onclick="setFilter('all')" class="stat-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm hover:border-indigo-500 dark:hover:border-indigo-500 transition group">
@@ -188,16 +189,16 @@
         <p class="text-[10px] text-slate-400 mt-1">কোনো সমস্যা নেই</p>
       </div>
 
-      <!-- 3. Duplicates Found Card -->
-      <div onclick="setFilter('duplicate')" class="stat-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm hover:border-rose-500 dark:hover:border-rose-500 transition group">
+      <!-- 3. Math / LaTeX / Table Issues Card -->
+      <div onclick="setFilter('math_issues')" class="stat-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm hover:border-purple-500 dark:hover:border-purple-500 transition group">
         <div class="flex items-center justify-between mb-1">
-          <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 font-bold">ডুপ্লিকেট</span>
-          <div class="w-6 h-6 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs">
-            <i class="fa-solid fa-clone"></i>
+          <span class="text-xs font-semibold text-purple-600 dark:text-purple-400 font-bold">টেবিল/ল্যাটেক্স ত্রুটি</span>
+          <div class="w-6 h-6 rounded-lg bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-square-root-variable"></i>
           </div>
         </div>
-        <div id="statDuplicates" class="text-xl font-bold text-rose-600 dark:text-rose-400">0</div>
-        <p class="text-[10px] text-rose-500/80 mt-1 font-medium">প্রশ্ন+অপশন+উত্তর এক</p>
+        <div id="statMathIssues" class="text-xl font-bold text-purple-600 dark:text-purple-400">0</div>
+        <p class="text-[10px] text-purple-500/80 mt-1 font-medium">পাওয়ার/টেবিল/ডট ফরম্যাট</p>
       </div>
 
       <!-- 4. Question/Option Issues Card -->
@@ -221,10 +222,22 @@
           </div>
         </div>
         <div id="statExplIssues" class="text-xl font-bold text-amber-600 dark:text-amber-400">0</div>
-        <p class="text-[10px] text-amber-500/80 mt-1 font-medium">দাঁড়ি-কমা/শব্দ স্পেস</p>
+        <p class="text-[10px] text-amber-500/80 mt-1 font-medium">ব্যাখ্যা নেই/মাঝপথে কাটা</p>
       </div>
 
-      <!-- 6. Flagged / Marked for Fix Card -->
+      <!-- 6. Duplicates Found Card -->
+      <div onclick="setFilter('duplicate')" class="stat-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm hover:border-rose-500 dark:hover:border-rose-500 transition group">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 font-bold">ডুপ্লিকেট</span>
+          <div class="w-6 h-6 rounded-lg bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-clone"></i>
+          </div>
+        </div>
+        <div id="statDuplicates" class="text-xl font-bold text-rose-600 dark:text-rose-400">0</div>
+        <p class="text-[10px] text-rose-500/80 mt-1 font-medium">প্রশ্ন+অপশন+উত্তর এক</p>
+      </div>
+
+      <!-- 7. Flagged / Marked for Fix Card -->
       <div onclick="setFilter('flagged')" class="stat-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 shadow-sm hover:border-purple-500 dark:hover:border-purple-500 transition group">
         <div class="flex items-center justify-between mb-1">
           <span class="text-xs font-semibold text-purple-600 dark:text-purple-400 font-bold">চিহ্নিত প্রশ্ন</span>
@@ -1048,6 +1061,20 @@
             });
           }
 
+          // D2. Superscript or Subscript inside \text{...} (KaTeX ক্র্যাশ করে: \text{^\circ C} বা \text{_a})
+          if (/\\text\{[^{}]*[\^_]/.test(target.text)) {
+            hasMathIssue = true;
+            const isTargetQOpt = target.isQOpt;
+            const badMatch = target.text.match(/\\text\{[^{}]*[\^_][^{}]*\}/)?.[0] || '\\text{^...}';
+            issues.push({
+              type: "danger",
+              isMath: true,
+              isQOpt: isTargetQOpt,
+              isExpl: !isTargetQOpt,
+              text: `${target.label}-এ \\text{...} এর ভেতরে পাওয়ার (^) বা সাবস্ক্রিপ্ট (_) রয়েছে (${badMatch})! KaTeX টেক্সট মোডে পাওয়ার সাপোর্ট করে না এবং মেইন ওয়েবসাইটে লাল কালিতে কোড ভেঙে যায়। সঠিক নিয়ম: ^{\\circ}\\text{C} বা ^\\circ\\text{C}`
+            });
+          }
+
           // E. Broken Fraction (\frac unclosed)
           const fracBroken = /\\frac\{[^{}]*(?:\{[^{}]*\}[^{}]*)?$/.test(target.text);
           if (fracBroken) {
@@ -1115,8 +1142,8 @@
 
       // hasExplIssue is ONLY for missing or incomplete explanation (pure explanation errors)
       const hasExplIssue = issues.some(i => i.isExpl && !i.isMath) || warnings.some(w => w.isExpl && !w.isMath);
-      // hasQOptIssue is ONLY for question/option missing or column shift or answer format errors
-      const hasQOptIssue = issues.some(i => i.isQOpt && !i.isMath) || warnings.some(w => w.isQOpt && !w.isMath);
+      // hasQOptIssue is for question/option missing, format, or LaTeX crash in options
+      const hasQOptIssue = issues.some(i => i.isQOpt) || warnings.some(w => w.isQOpt);
 
       return {
         hasIssues: issues.length > 0,
@@ -1281,6 +1308,7 @@
     // --- Update Header Stats ---
     function updateStats() {
       let cleanCount = 0;
+      let mathIssuesCount = 0;
       let duplicateCount = 0;
       let qIssuesCount = 0;
       let explIssuesCount = 0;
@@ -1291,6 +1319,7 @@
       allQuestions.forEach(q => {
         const audit = auditQuestion(q);
         if (audit.isClean) cleanCount++;
+        if (audit.hasMathIssue) mathIssuesCount++;
         if (audit.isDuplicate) duplicateCount++;
         if (audit.hasQOptIssue) qIssuesCount++;
         if (audit.hasExplIssue) explIssuesCount++;
@@ -1299,6 +1328,8 @@
 
       document.getElementById("statTotal").textContent = allQuestions.length;
       document.getElementById("statClean").textContent = cleanCount;
+      const statMath = document.getElementById("statMathIssues");
+      if (statMath) statMath.textContent = mathIssuesCount;
       document.getElementById("statDuplicates").textContent = duplicateCount;
       document.getElementById("statQIssues").textContent = qIssuesCount;
       document.getElementById("statExplIssues").textContent = explIssuesCount;
@@ -1338,7 +1369,7 @@
         banner.classList.remove("hidden");
         const names = {
           clean: 'ত্রুটিমুক্ত প্রশ্নসমূহ',
-          math_issues: 'ম্যাথ, ডিটারমিন্যান্ট টেবিল ও ডট গুণন ফরম্যাটিং ত্রুটিসমূহ',
+          math_issues: 'টেবিল, পাওয়ার ও ল্যাটেক্স ফরম্যাটিং ত্রুটিসমূহ',
           q_issues: 'প্রশ্ন ও অপশনের ত্রুটিসমূহ',
           expl_issues: 'ব্যাখ্যার ত্রুটিসমূহ (দাঁড়ি-কমা/শব্দ স্পেস/ব্যাখ্যা নেই)',
           duplicate: 'হুবহু ডুপ্লিকেট প্রশ্নসমূহ',
